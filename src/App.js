@@ -1,83 +1,121 @@
-import React from 'react';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import MovieList from "./components/MovieList";
 
-import { addWatchedMovie, add, removeWatchedMovie, getWatchedMovies, getAllMovies } from './index.js';
+// using css modules will help here so we have less css bugs
+import "./App.css";
 
-const getMoviesComponents = (movies) => {
-  var components = [];
+import { getWatchedMovies, getAllMovies } from "./utils/appUtils";
 
-  movies.forEach(function(movie) {
-    components.push(
-      <div className="all">
-        <div>
-          <img src={movie.image} height="100px" />
-        </div>
-        <span>
-          <a className="movie-watched" href="#" onClick={function() { addWatchedMovie(movie.title, movie.comment, movie.image) }}>
-            {movie.title}
-          </a>
-        </span>
-        <br />
-        <span>
-          {movie.comment}
-        </span>
-        <br />
-        <br />
-      </div>
-    )
-  })
+function App() {
+  const [title, setTitle] = useState("");
+  const [imageURL, setImageURL] = useState("");
+  const [comment, setComment] = useState("");
+  const [movies, setMovies] = useState([]);
+  const [watchedMovies, setWatchedMovies] = useState([]);
 
-  return components;
-}
+  useEffect(() => {
+    const movies = getAllMovies();
+    setMovies(movies);
+  }, []);
 
-function getWatchedMoviesComponents(movies) {
-  var components = [];
+  useEffect(() => {
+    const watchedMovies = getWatchedMovies();
+    setWatchedMovies(watchedMovies);
+  }, []);
 
-  movies.forEach(function(movie) {
-    components.push(movie && (
-      <div className="watched">
-        <div>
-          <img src={movie.image} height="100px" />
-        </div>
-        <span>
-          <a className="movie-watched" href="#" onClick={function() { removeWatchedMovie(movie.title) }}>
-            {movie.title}
-          </a>
-        </span>
-        <br />
-        <span>
-          {movie.comment}
-        </span>
-        <br />
-        <br />
-      </div>
-    ))
-  })
+  // update movie list
+  useEffect(() => {
+    if (movies.length) {
+      localStorage.setItem("movies-all", JSON.stringify(movies));
+    }
+  }, [movies]);
 
-  return components;
-}
+  useEffect(() => {
+    if (watchedMovies.length) {
+      localStorage.setItem("movies-watched", JSON.stringify(watchedMovies));
+    }
+  }, [watchedMovies]);
 
-function App(props) {
+  function add(title, description, image) {
+    const newMovie = { title, description, image };
+    setMovies([...movies, newMovie]);
+  }
+
+  function addWatchedMovie(title, description, image) {
+    const newMovie = { title, description, image };
+    setWatchedMovies([...watchedMovies, newMovie]);
+    const filteredMovies = movies.filter((movie) => movie.title !== title);
+    setMovies(filteredMovies);
+  }
+
+  function removeWatchedMovie(title) {
+    const filteredMovies = watchedMovies.filter(
+      (movie) => movie.title !== title
+    );
+    setWatchedMovies(filteredMovies);
+  }
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    add(title, imageURL, comment);
+    setTitle("");
+    setComment("");
+    setImageURL("");
+  };
+
   return (
     <div className="App">
       <h1>Codest Movies!</h1>
       <h1>Add movie!</h1>
-      <b>TITLE:<br /><input type="text" onChange={function(e) { title = e.target.value; }} /></b><br />
-      <b>IMAGE URL:<br /><input type="text" onChange={function(e) { image = e.target.value; }} /></b><br />
-      <b>COMMENT:<br /><input type="text" onChange={function(e) { comment = e.target.value; }} /></b><br />
-      <input type="button" onClick={function(e) { add(title, image, comment); }} value="ADD MOVIE" />
+      <form onSubmit={handleSubmit}>
+        <b>
+          TITLE:
+          <br />
+          <input
+            type="text"
+            onChange={function (e) {
+              setTitle(e.target.value);
+            }}
+            value={title}
+          />
+        </b>
+        <br />
+        <b>
+          IMAGE URL:
+          <br />
+          <input
+            type="text"
+            onChange={function (e) {
+              setImageURL(e.target.value);
+            }}
+            value={imageURL}
+          />
+        </b>
+        <br />
+        <b>
+          COMMENT:
+          <br />
+          <input
+            type="text"
+            onChange={function (e) {
+              setComment(e.target.value);
+            }}
+            value={comment}
+          />
+        </b>
+        <br />
+        <input type="submit" value="ADD MOVIE" />
+      </form>
 
-      <h1>Watchlist:</h1>
-      {getMoviesComponents(getAllMovies())}
-
+      <h1>Watch list:</h1>
+      <MovieList onAddWatchedMovie={addWatchedMovie} movies={movies} />
       <h1>Already watched:</h1>
-      {getWatchedMoviesComponents(getWatchedMovies())}
+      <MovieList
+        movies={watchedMovies}
+        onRemoveWatchedMovie={removeWatchedMovie}
+      />
     </div>
   );
 }
-
-var title = '';
-var image = '';
-var comment = '';
 
 export default App;

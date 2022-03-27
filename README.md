@@ -18,6 +18,11 @@ Do not spend more than two hours on this assignment. Keep it simple!
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Getting Started
+
+- Run `yarn` or `npm install` to install packages
+- Run `yarn start` or `npm start` to run local development environment
+
 ## Available Scripts
 
 In the project directory, you can run:
