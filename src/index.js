@@ -8,7 +8,7 @@ export function getWatchedMovies() {
 
 	if (!movies) {
 		return [];
-	} else {
+	} else { // since there is an early return, there is no need for an else block
 		return JSON.parse(movies);
 	}
 }
@@ -50,6 +50,8 @@ export function add(title, description, image) {
 
 	localStorage.setItem('movies-all', JSON.stringify(movies));
 
+	// We don't need to call the function multiple times like we are doing right now.
+	// Having components will solve the problem
 	render();
 }
 
